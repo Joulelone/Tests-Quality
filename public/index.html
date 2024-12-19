@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon GPT</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9; }
+        input, button { padding: 10px; margin-top: 10px; }
+        #chat { margin-top: 20px; max-height: 400px; overflow-y: auto; background: #fff; border: 1px solid #ddd; padding: 10px; border-radius: 5px; }
+        .message { margin-bottom: 15px; }
+        .user { font-weight: bold; color: #007BFF; }
+        .bot { color: #333; }
+        #response { margin-top: 20px; color: red; }
+    </style>
+</head>
+<body>
+    <h1>Mon GPT</h1>
+    <input type="text" id="prompt" placeholder="Entrez votre message">
+    <button onclick="sendPrompt()">Envoyer</button>
+    <button onclick="resetHistory()">Réinitialiser l'historique</button>
+    <button onclick="setMood('gentil')">Humeur Gentil</button>
+    <button onclick="setMood('hautain')">Humeur Hautain</button>
+
+    <div id="chat"></div>
+    <div id="response"></div>
+
+    <script>
+        async function sendPrompt() {
+            const prompt = document.getElementById('prompt').value;
+            const chatDiv = document.getElementById('chat');
+            const responseDiv = document.getElementById('response');
+
+            if (!prompt) {
+                responseDiv.textContent = 'Veuillez entrer un message.';
+                return;
+            }
+
+            responseDiv.textContent = ''; // Clear any previous error messages
+
+            try {
+                // Envoyer le message utilisateur au serveur
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ prompt })
+                });
+
+                const data = await response.json();
+
+                // Afficher le message utilisateur et la réponse du bot
+                chatDiv.innerHTML += `
+                    <div class="message user">Vous: ${prompt}</div>
+                    <div class="message bot">GPT: ${data.reply}</div>
+                `;
+                chatDiv.scrollTop = chatDiv.scrollHeight; // Scroll to the bottom
+
+                // Réinitialiser le champ de saisie
+                document.getElementById('prompt').value = '';
+            } catch (error) {
+                console.error('Error:', error);
+                responseDiv.textContent = 'Erreur de communication avec le serveur.';
+            }
+        }
+
+        async function resetHistory() {
+            const responseDiv = document.getElementById('response');
+            const chatDiv = document.getElementById('chat');
+
+            try {
+                await fetch('/api/reset', { method: 'POST' });
+
+                // Réinitialiser l'interface utilisateur
+                chatDiv.innerHTML = '';
+                responseDiv.textContent = 'Historique réinitialisé avec succès.';
+            } catch (error) {
+                console.error('Error:', error);
+                responseDiv.textContent = 'Erreur lors de la réinitialisation de l\'historique.';
+            }
+        }
+
+        async function setMood(mood) {
+            const responseDiv = document.getElementById('response');
+
+            try {
+                const response = await fetch('/api/mood', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ mood })
+                });
+
+                const text = await response.text();
+                responseDiv.textContent = text;
+            } catch (error) {
+                console.error('Error:', error);
+                responseDiv.textContent = 'Erreur lors du changement d\'humeur.';
+            }
+        }
+    </script>
+</body>
+</html>
