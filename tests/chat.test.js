@@ -16,7 +16,7 @@ describe('Chat API Tests', () => {
 
     it('should handle empty prompts gracefully', async () => {
         const response = await request(app).post('/api/chat').send({ prompt: '' });
-        expect(response.statusCode).toBe(500); // Or appropriate error handling
-        expect(response.text).toContain('Error communicating with OpenAI');
+        expect(response.statusCode).toBe(400); // Adjusted to match new behavior
+        expect(response.text).toContain('Prompt cannot be empty.');
     });
 });

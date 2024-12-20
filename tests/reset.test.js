@@ -13,8 +13,9 @@ describe('Reset API Tests', () => {
         await agent.post('/api/mood').send({ mood: 'hautain' }); // Set mood
         const resetResponse = await agent.post('/api/reset');
         expect(resetResponse.statusCode).toBe(200);
-
+    
+        // Test if cookies were cleared
         const chatResponse = await agent.post('/api/chat').send({ prompt: 'Test' });
-        expect(chatResponse.body.mood).toBeUndefined(); // Ensure mood is cleared
+        expect(chatResponse.body.mood).toBeUndefined();
     });
 });

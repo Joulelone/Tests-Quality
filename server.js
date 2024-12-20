@@ -18,6 +18,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Chatbot routes
 app.post('/api/chat', async (req, res) => {
     const prompt = req.body.prompt;
+    if (!prompt || prompt.trim() === '') {
+        return res.status(400).send('Prompt cannot be empty.');
+    }
     const history = req.cookies.history ? JSON.parse(req.cookies.history) : [];
     const mood = req.cookies.mood || 'gentil'; // Valeur par défaut : gentil
 
@@ -65,8 +68,8 @@ app.post('/api/mood', (req, res) => {
 
 app.post('/api/reset', (req, res) => {
     res.clearCookie('history');
-    res.clearCookie('mood');
-    res.send('Historique et humeur réinitialisés.');
+    res.clearCookie('mood'); // This clears the mood cookie
+    res.status(200).send('Historique et humeur réinitialisés.');
 });
 
 // Only start the server in non-test environments
